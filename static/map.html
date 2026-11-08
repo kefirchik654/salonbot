@@ -1,0 +1,34 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+ html,body,#map{height:100%;margin:0}
+ .pop b{display:block;font-size:15px;margin-bottom:2px}
+ .pop button{margin-top:8px;padding:8px 14px;border:0;border-radius:8px;background:#2481cc;color:#fff;font-size:14px;width:100%}
+</style></head>
+<body><div id="map"></div>
+<script>
+const tg = window.Telegram && Telegram.WebApp; if (tg) { tg.ready(); tg.expand(); }
+const lc = ((tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.language_code) || navigator.language || 'en').slice(0,2);
+const label = {ru:'Открыть', uk:'Відкрити', de:'Öffnen', es:'Abrir', fr:'Ouvrir', tr:'Aç', it:'Apri', pt:'Abrir', pl:'Otwórz'}[lc] || 'Open';
+const map = L.map('map').setView([55.75, 37.62], 4);
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19, attribution: '© OpenStreetMap'}).addTo(map);
+fetch('/api/salons').then(r => r.json()).then(list => {
+  const pts = [];
+  list.forEach(s => {
+    const box = document.createElement('div'); box.className = 'pop';
+    const b = document.createElement('b'); b.textContent = s.name;
+    const a = document.createElement('span'); a.textContent = s.address || '';
+    const btn = document.createElement('button'); btn.textContent = label;
+    btn.onclick = () => { if (tg) tg.sendData(String(s.id)); };
+    box.append(b, a, btn);
+    L.marker([s.lat, s.lon]).addTo(map).bindPopup(box);
+    pts.push([s.lat, s.lon]);
+  });
+  if (pts.length === 1) map.setView(pts[0], 15);
+  else if (pts.length) map.fitBounds(pts, {padding: [40, 40]});
+});
+</script></body></html>

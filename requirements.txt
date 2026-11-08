@@ -1,0 +1,7 @@
+aiogram>=3.13,<4
+asyncpg>=0.30
+python-dotenv>=1.0
+babel>=2.14
+deep-translator>=1.11
+google-api-python-client>=2.120
+google-auth>=2.28
